@@ -68,13 +68,6 @@ public class GetCropImageActivity extends AppCompatActivity {
             if(tempFile != null) {
                 if(tempFile.exists()) {
 
-                    //TODO 파일을 지우면 빈 썸네일이 남습니다.
-                   /* Uri rootUri = MediaStore.Audio.Media.getContentUriForPath( tempFile.getPath() );
-                    Log.e(TAG,  "rootUri : " + rootUri);
-
-                    getContentResolver().delete( rootUri,
-                            MediaStore.MediaColumns.DATA + "=?", new String[]{ tempFile.getPath() } );*/
-
                     if(tempFile.delete()) {
                         Log.e(TAG, tempFile.getAbsolutePath() + " 삭제 성공");
                         tempFile = null;
@@ -139,7 +132,7 @@ public class GetCropImageActivity extends AppCompatActivity {
     }
 
     /**
-     *  카메라를 이미지 가져오기
+     *  카메라에서 이미지 가져오기
      */
     private void takePhoto() {
         isCamera = true;
@@ -188,7 +181,7 @@ public class GetCropImageActivity extends AppCompatActivity {
         Log.d(TAG, "tempFile : " + tempFile);
 
         /**
-         *  갤러리에서 선택한 경우에는 tempFile 이 없으므로 새로 생성해줍니다.
+         *  갤러리에서 선택한 경우에는 tempFile이 없으므로 새로 생성해줍니다.
          */
         if(tempFile == null) {
             try {

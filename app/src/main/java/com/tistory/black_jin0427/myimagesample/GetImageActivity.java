@@ -59,7 +59,6 @@ public class GetImageActivity extends AppCompatActivity {
         if (resultCode != RESULT_OK) {
             Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
 
-            //TODO 파일을 지우면 빈 썸네일이 남습니다.
             if(tempFile != null) {
                 if(tempFile.exists()) {
                     if(tempFile.delete()) {
@@ -134,7 +133,7 @@ public class GetImageActivity extends AppCompatActivity {
 
 
     /**
-     *  카메라를 이미지 가져오기
+     *  카메라에서 이미지 가져오기
      */
     private void takePhoto() {
         isCamera = true;

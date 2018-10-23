@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Boolean isPermission = false;
+    private Boolean isPermission = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPermissionDenied(ArrayList<String> deniedPermissions) {
                 // 권한 요청 실패
+                isPermission = false;
             }
         };
 
