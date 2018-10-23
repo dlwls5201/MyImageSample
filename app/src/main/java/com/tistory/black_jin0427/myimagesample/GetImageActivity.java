@@ -1,5 +1,7 @@
 package com.tistory.black_jin0427.myimagesample;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -16,21 +18,24 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.tistory.black_jin0427.myimagesample.util.ImageResizeUtils;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class GetImageActivity extends AppCompatActivity {
 
     private static final String TAG = "blackjin";
 
+    private Boolean isPermission = true;
+
     private static final int PICK_FROM_ALBUM = 1;
     private static final int PICK_FROM_CAMERA = 2;
 
-    private Boolean isCamera = false;
     private File tempFile;
 
     @Override
@@ -38,42 +43,42 @@ public class GetImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_image);
 
+        tedPermission();
+
         findViewById(R.id.btnGallery).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                goToAlbum();
+                // 권한 허용에 동의하지 않았을 경우 토스트를 띄웁니다.
+                if(isPermission) goToAlbum();
+                else Toast.makeText(view.getContext(), getResources().getString(R.string.permission_2), Toast.LENGTH_LONG).show();
+
             }
         });
 
         findViewById(R.id.btnCamera).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                takePhoto();
-        }
+                // 권한 허용에 동의하지 않았을 경우 토스트를 띄웁니다.
+                if(isPermission)  takePhoto();
+                else Toast.makeText(view.getContext(), getResources().getString(R.string.permission_2), Toast.LENGTH_LONG).show();
+
+            }
         });
 
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != RESULT_OK) {
+        if (resultCode != Activity.RESULT_OK) {
             Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
 
-            //TODO 파일을 지우면 빈 썸네일이 남습니다.
             if(tempFile != null) {
-                if(tempFile.exists()) {
-                    if(tempFile.delete()) {
+                if (tempFile.exists()) {
+                    if (tempFile.delete()) {
                         Log.e(TAG, tempFile.getAbsolutePath() + " 삭제 성공");
                         tempFile = null;
-                    } else {
-                        Log.e(TAG, "tempFile 삭제 실패");
                     }
-
-                } else {
-                    Log.e(TAG, "tempFile 존재하지 않음");
                 }
-            } else {
-                Log.e(TAG, "tempFile is null");
             }
 
             return;
@@ -125,7 +130,6 @@ public class GetImageActivity extends AppCompatActivity {
      *  앨범에서 이미지 가져오기
      */
     private void goToAlbum() {
-        isCamera = false;
 
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
@@ -137,7 +141,6 @@ public class GetImageActivity extends AppCompatActivity {
      *  카메라를 이미지 가져오기
      */
     private void takePhoto() {
-        isCamera = true;
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -200,8 +203,6 @@ public class GetImageActivity extends AppCompatActivity {
 
         ImageView imageView = findViewById(R.id.imageVeiew);
 
-        ImageResizeUtils.resizeFile(tempFile, tempFile, 1280, isCamera);
-
         BitmapFactory.Options options = new BitmapFactory.Options();
         Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
         Log.d(TAG, "setImage : " + tempFile.getAbsolutePath());
@@ -214,6 +215,36 @@ public class GetImageActivity extends AppCompatActivity {
          *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
          */
         tempFile = null;
+
+    }
+
+    /**
+     *  권한 설정
+     */
+    private void tedPermission() {
+
+        PermissionListener permissionListener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                // 권한 요청 성공
+                isPermission = true;
+
+            }
+
+            @Override
+            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+                // 권한 요청 실패
+                isPermission = false;
+
+            }
+        };
+
+        TedPermission.with(this)
+                .setPermissionListener(permissionListener)
+                .setRationaleMessage(getResources().getString(R.string.permission_2))
+                .setDeniedMessage(getResources().getString(R.string.permission_1))
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
+                .check();
 
     }
 
