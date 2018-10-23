@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
+import com.tistory.black_jin0427.myimagesample.util.ImageResizeUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class GetImageActivity extends AppCompatActivity {
     private static final int PICK_FROM_ALBUM = 1;
     private static final int PICK_FROM_CAMERA = 2;
 
+    private Boolean isCamera = false;
     private File tempFile;
 
     @Override
@@ -130,6 +132,7 @@ public class GetImageActivity extends AppCompatActivity {
      *  앨범에서 이미지 가져오기
      */
     private void goToAlbum() {
+        isCamera = false;
 
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
@@ -141,6 +144,7 @@ public class GetImageActivity extends AppCompatActivity {
      *  카메라를 이미지 가져오기
      */
     private void takePhoto() {
+        isCamera = true;
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -203,18 +207,13 @@ public class GetImageActivity extends AppCompatActivity {
 
         ImageView imageView = findViewById(R.id.imageVeiew);
 
+        ImageResizeUtils.resizeFile(tempFile, tempFile, 1280, isCamera);
+
         BitmapFactory.Options options = new BitmapFactory.Options();
         Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
         Log.d(TAG, "setImage : " + tempFile.getAbsolutePath());
 
         imageView.setImageBitmap(originalBm);
-
-        /**
-         *  tempFile 사용 후 null 처리를 해줘야 합니다.
-         *  (resultCode != RESULT_OK) 일 때 tempFile 을 삭제하기 때문에
-         *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
-         */
-        tempFile = null;
 
     }
 
