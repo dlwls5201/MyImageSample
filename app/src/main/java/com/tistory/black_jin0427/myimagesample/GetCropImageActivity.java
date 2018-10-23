@@ -1,5 +1,6 @@
 package com.tistory.black_jin0427.myimagesample;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
@@ -19,12 +20,15 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
 import com.soundcloud.android.crop.Crop;
 import com.tistory.black_jin0427.myimagesample.util.ImageResizeUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,9 +36,10 @@ public class GetCropImageActivity extends AppCompatActivity {
 
     private static final String TAG = "blackjin";
 
+    private Boolean isPermission = true;
+
     private static final int PICK_FROM_ALBUM = 1;
     private static final int PICK_FROM_CAMERA = 2;
-    private static final int CROP_IMAGE = 3;
 
     private Boolean isCamera = false;
     private File tempFile;
@@ -44,20 +49,27 @@ public class GetCropImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_image);
 
+        tedPermission();
+
         findViewById(R.id.btnGallery).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                goToAlbum();
+                // 권한 허용에 동의하지 않았을 경우 토스트를 띄웁니다.
+                if(isPermission) goToAlbum();
+                else Toast.makeText(view.getContext(), getResources().getString(R.string.permission_2), Toast.LENGTH_LONG).show();
+
             }
         });
 
         findViewById(R.id.btnCamera).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                takePhoto();
+                // 권한 허용에 동의하지 않았을 경우 토스트를 띄웁니다.
+                if(isPermission)  takePhoto();
+                else Toast.makeText(view.getContext(), getResources().getString(R.string.permission_2), Toast.LENGTH_LONG).show();
+
             }
         });
-
     }
 
     @Override
@@ -66,20 +78,13 @@ public class GetCropImageActivity extends AppCompatActivity {
             Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
 
             if(tempFile != null) {
-                if(tempFile.exists()) {
+                if (tempFile.exists()) {
 
-                    if(tempFile.delete()) {
+                    if (tempFile.delete()) {
                         Log.e(TAG, tempFile.getAbsolutePath() + " 삭제 성공");
                         tempFile = null;
-                    } else {
-                        Log.e(TAG, "tempFile 삭제 실패");
                     }
-
-                } else {
-                    Log.e(TAG, "tempFile 존재하지 않음");
                 }
-            } else {
-                Log.e(TAG, "tempFile is null");
             }
 
             return;
@@ -97,7 +102,6 @@ public class GetCropImageActivity extends AppCompatActivity {
             }
             case PICK_FROM_CAMERA: {
 
-                // 앨범에 있지만 카메라 에서는 data.getData()가 없음
                 Uri photoUri = Uri.fromFile(tempFile);
                 Log.d(TAG, "takePhoto photoUri : " + photoUri);
 
@@ -105,16 +109,8 @@ public class GetCropImageActivity extends AppCompatActivity {
 
                 break;
             }
-            // Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-            case CROP_IMAGE: {
-
-                setImage();
-
-                break;
-            }
-            // Build.VERSION.SDK_INT < Build.VERSION_CODES.N
             case Crop.REQUEST_CROP: {
-                tempFile = new File(Crop.getOutput(data).getPath());
+                //File cropFile = new File(Crop.getOutput(data).getPath());
                 setImage();
             }
         }
@@ -181,7 +177,7 @@ public class GetCropImageActivity extends AppCompatActivity {
         Log.d(TAG, "tempFile : " + tempFile);
 
         /**
-         *  갤러리에서 선택한 경우에는 tempFile이 없으므로 새로 생성해줍니다.
+         *  갤러리에서 선택한 경우에는 tempFile 이 없으므로 새로 생성해줍니다.
          */
         if(tempFile == null) {
             try {
@@ -193,7 +189,7 @@ public class GetCropImageActivity extends AppCompatActivity {
             }
         }
 
-        //크롭에 후 저장할 Uri
+        //크롭 후 저장할 Uri
         Uri savingUri = Uri.fromFile(tempFile);
 
         Crop.of(photoUri, savingUri).asSquare().start(this);
@@ -240,6 +236,36 @@ public class GetCropImageActivity extends AppCompatActivity {
          *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
          */
         tempFile = null;
+
+    }
+
+    /**
+     *  권한 설정
+     */
+    private void tedPermission() {
+
+        PermissionListener permissionListener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                // 권한 요청 성공
+                isPermission = true;
+
+            }
+
+            @Override
+            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+                // 권한 요청 실패
+                isPermission = false;
+
+            }
+        };
+
+        TedPermission.with(this)
+                .setPermissionListener(permissionListener)
+                .setRationaleMessage(getResources().getString(R.string.permission_2))
+                .setDeniedMessage(getResources().getString(R.string.permission_1))
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
+                .check();
 
     }
 
