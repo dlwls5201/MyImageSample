@@ -1,13 +1,9 @@
 package com.tistory.black_jin0427.myimagesample;
 
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -26,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 public class GetCropImageActivity extends AppCompatActivity {
 
@@ -34,7 +29,6 @@ public class GetCropImageActivity extends AppCompatActivity {
 
     private static final int PICK_FROM_ALBUM = 1;
     private static final int PICK_FROM_CAMERA = 2;
-    private static final int CROP_IMAGE = 3;
 
     private Boolean isCamera = false;
     private File tempFile;
@@ -105,16 +99,8 @@ public class GetCropImageActivity extends AppCompatActivity {
 
                 break;
             }
-            // Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-            case CROP_IMAGE: {
-
-                setImage();
-
-                break;
-            }
-            // Build.VERSION.SDK_INT < Build.VERSION_CODES.N
             case Crop.REQUEST_CROP: {
-                tempFile = new File(Crop.getOutput(data).getPath());
+                //File cropFile = new File(Crop.getOutput(data).getPath());
                 setImage();
             }
         }
