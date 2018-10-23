@@ -31,9 +31,6 @@ dependencies {
     //ted permission
     implementation "gun0912.ted:tedpermission:2.1.0"
 
-    //crop
-    implementation 'com.soundcloud.android:android-crop:1.0.1@aar'
-
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
